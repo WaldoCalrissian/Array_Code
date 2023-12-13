@@ -1,0 +1,10 @@
+package com.example.myapplication;
+
+public class Example {
+    int xStart = 0;
+    int yStart = 0;
+    int xEnd = 0;
+    int yEnd = 0;
+    int xCurrent = 0;
+    int yCurrent = 0;
+}
