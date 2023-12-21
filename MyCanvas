@@ -38,7 +38,7 @@ public class MyCanvas extends View {
     Paint Yellow_Rect = new Paint();
     Paint Orange_Rect = new Paint();
     Paint Black_Rect = new Paint();
-    Paint White_Line = new Paint();
+    Paint Black_Line = new Paint();
     Paint Red_Dot = new Paint();
     private Example[] FromTo = new Example[25];
     int Number_of_Clicks = 0;
@@ -51,6 +51,9 @@ public class MyCanvas extends View {
     boolean To_Selected = false;
     boolean Draw_Line = false;
     boolean One_Shot = false;
+    boolean Two_Shot = false;
+    boolean Show_Line = false;
+    boolean first_pass = false;
     public MyCanvas(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint = new Paint();
@@ -118,27 +121,59 @@ public class MyCanvas extends View {
         Orange_Rect.setColor(Color.BLACK);
         Orange_Rect.setTextSize(40);
         canvas.drawText("Turn",800,1900,Orange_Rect);
-        for (int i = 0; i <25; i++)
-        {FromTo[i] = new Example();}
+        if (first_pass == false) {
+            for (int i = 0; i < 25; i++) {
+                FromTo[i] = new Example();
+                first_pass = true;
+            }
+        }
+        if (Blue_Selected == true && One_Shot == false) {
+            Black_Rect.setTextSize(40);
+            canvas.drawText("From :", 50, 2000, Black_Rect);
+        }
 
-        if (Blue_Selected == true && One_Shot == true) {
-            if (FromTo[0].xStart == 0) {
+        if (Blue_Selected == true && From_Selected == false) {
+            if (yTouch < 1700) {
                 Black_Rect.setColor(Color.BLACK);
                 Black_Rect.setTextSize(40);
                 FromTo[0].xStart = xTouch;
                 FromTo[0].yStart = yTouch;
+                FromTo[0].xCurrent = xTouch;
+                FromTo[0].yCurrent = yTouch;
                 From = "From : " + String.valueOf(FromTo[0].xStart) + " , " + String.valueOf(FromTo[0].yStart);
                 canvas.drawText(From, 50, 2000, Black_Rect);
+                From_Selected = true;
+                xTouch = 0;
+                yTouch = 0;
                }
         }
-            if (From_Selected == true) {
+        if (From_Selected == true && Two_Shot == true && To_Selected == false) {
+            if (yTouch < 1700) {
                     FromTo[0].xEnd = xTouch;
                     FromTo[0].yEnd = yTouch;
-                    To = String.valueOf(Number_of_Clicks) + String.valueOf(" To : " + FromTo[0].xEnd) + " , " + String.valueOf(FromTo[0].yEnd);
+                    To = String.valueOf(" To : " + FromTo[0].xEnd) + " , " + String.valueOf(FromTo[0].yEnd);
                     canvas.drawText(From, 50, 2000, Black_Rect);
                     canvas.drawText(To, 550, 2000, Black_Rect);
                     To_Selected = true;
+                    Two_Shot = false;
+                    One_Shot = false;
+
                 }
+                }
+        if (To_Selected == true){
+                From_Selected = false;
+                To_Selected = false;
+                Two_Shot = false;
+                One_Shot = false;
+                Show_Line = true;
+            }
+        if (Show_Line == true){
+            Black_Line.setColor(Color.BLACK);
+            canvas.drawLine(FromTo[0].xStart, FromTo[0].yStart, FromTo[0].xEnd, FromTo[0].yEnd, Black_Line);
+
+            Red_Dot.setColor(Color.RED);
+            canvas.drawCircle(FromTo[0].xCurrent, FromTo[0].yCurrent, 8, Red_Dot);
+        }
     }
 
     public boolean onTouchEvent (MotionEvent event){
@@ -148,11 +183,16 @@ public class MyCanvas extends View {
         float yPos = event.getY();
         xTouch = (int)xPos;
         yTouch = (int)yPos;
-        Number_of_Clicks = Number_of_Clicks + 1;
+
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 path.moveTo(xPos,yPos);
+                Number_of_Clicks = Number_of_Clicks + 1;
                 One_Shot = true;
+                if (From_Selected == true){
+                    One_Shot = false;
+                    Two_Shot = true;
+                }
 
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -167,12 +207,14 @@ public class MyCanvas extends View {
 
         }
         invalidate();
-        canvascoord = String.valueOf(xPos) + " " + String.valueOf(yPos);
+        canvascoord = String.valueOf(FromTo[0].xStart) + " , " + String.valueOf(FromTo[0].yStart) + " --- " + String.valueOf(FromTo[0].xEnd) + " , " + String.valueOf(FromTo[0].yEnd);
         String TAG = "button";
         Log.d(TAG, canvascoord);
         if (yPos >= 1700 && yPos <+1800){
             if (xPos >=0 && xPos <= 200){
-                Blue_Selected = true;}
+                Blue_Selected = true;
+                From_Selected = false;
+            }
         }
 
         return true;
